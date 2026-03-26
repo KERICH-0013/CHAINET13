@@ -1,0 +1,43 @@
+name: chainet_app
+description: Smarter Tea Farming
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  open_meteo: ^3.0.0
+  http: ^1.1.0
+  provider: ^6.1.2           # for state management
+  hive_flutter: ^1.1.0       # for storing chat history
+  firebase_core: ^3.12.0     # latest
+  firebase_auth: ^5.5.0       # latest
+  cloud_firestore: ^5.6.0    # latest
+  pin_code_fields: ^8.0.1    # OTP input field (no smart_auth dependency)
+  camera: ^0.10.5             # for camera access
+  image_picker: ^1.0.4        # for picking images from gallery
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+# dependency_overrides section removed – no longer needed
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/background.jpg
+    - assets/images/dashboard.jpg
+    - assets/images/dashboard2.jpg
+    - assets/images/market.jpg
+    - assets/images/farming guide.jpg   # note: avoid spaces in filenames if possible
+    - assets/images/chatbot.jpg
+    - assets/images/weather.jpg
+    - assets/images/register.jpg
+    - assets/images/login.jpg
+    - assets/images/about.jpg
+    - assets/images/about1.jpg
