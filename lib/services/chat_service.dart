@@ -8,18 +8,17 @@ class ChatService {
 
   ChatService({required this.apiKey});
 
-  // Stream for real-time AI responses
   Stream<String> sendMessageStream(String message) async* {
     final request = http.Request('POST', Uri.parse(baseUrl));
     request.headers.addAll({
       'Authorization': 'Bearer $apiKey',
       'Content-Type': 'application/json',
-      'HTTP-Referer': 'https://your-app-name.com', // Replace with your app
+      'HTTP-Referer': 'https://your-app-name.com',
       'X-Title': 'CHAINET',
     });
 
     request.body = json.encode({
-      'model': 'meta-llama/llama-3-8b-instruct:nitro', // Free model
+      'model': 'openrouter/auto',                 // ← switched to a reliable model
       'messages': [
         {
           'role': 'system',
@@ -37,7 +36,7 @@ class ChatService {
     if (response.statusCode != 200) {
       final errorBody = await response.stream.bytesToString();
       print('Error body: $errorBody');
-      throw Exception('Failed to get response: $response.statusCode');
+      throw Exception('Failed to get response: ${response.statusCode}');
     }
 
     await for (var chunk
@@ -53,7 +52,7 @@ class ChatService {
             yield content;
           }
         } catch (e) {
-          // Ignore parsing errors for incomplete chunks
+          // Ignore incomplete chunks
         }
       }
     }

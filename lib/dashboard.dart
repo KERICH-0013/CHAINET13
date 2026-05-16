@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 import '../screens/weather_page.dart';
 import '../screens/market_page.dart';
 import '../screens/pest_detection_page.dart';
-import '../screens/settings_page.dart'; // <-- added import for Settings
+import '../screens/settings_page.dart';
+import '../screens/Extension_officer Application/officer_application_page.dart';
+import '../screens/officer_directory.dart';
+import '../screens/premium_checkout_page.dart';
+import '../screens/chat_page.dart'; // ✅ added import
 
 class DashboardPage extends StatelessWidget {
   const DashboardPage({super.key});
@@ -57,6 +61,56 @@ class DashboardPage extends StatelessWidget {
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
                     color: Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // 🔹 NEW: Unlock Premium Services Card (placed right after greeting)
+                Card(
+                  elevation: 4,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: InkWell(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const PremiumCheckoutPage()),
+                      );
+                    },
+                    borderRadius: BorderRadius.circular(16),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: Colors.orange.shade50,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Icon(Icons.workspace_premium, size: 30, color: Colors.orange.shade700),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: const [
+                                Text(
+                                  'Unlock Premium Services',
+                                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                                ),
+                                Text(
+                                  'Get access to officer registration & advanced pest detection',
+                                  style: TextStyle(fontSize: 14, color: Colors.grey),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Icon(Icons.arrow_forward_ios, size: 16, color: Colors.orange.shade700),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -295,7 +349,7 @@ class DashboardPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
 
-                // 🔹 NEW: Pest Detection Card (tappable)
+                // Pest Detection Card (tappable)
                 GestureDetector(
                   onTap: () {
                     Navigator.push(
@@ -386,6 +440,42 @@ class DashboardPage extends StatelessWidget {
                     ),
                   ),
                 ),
+
+                // 🔹 New: Extension Officer Options
+                const SizedBox(height: 16),
+                Card(
+                  elevation: 2,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Column(
+                    children: [
+                      ListTile(
+                        leading: const Icon(Icons.assignment, color: Colors.green),
+                        title: const Text('Become an Extension Officer'),
+                        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => OfficerApplicationPage()),
+                          );
+                        },
+                      ),
+                      const Divider(height: 1),
+                      ListTile(
+                        leading: const Icon(Icons.people, color: Colors.green),
+                        title: const Text('Find Extension Officers'),
+                        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => const OfficerDirectory()),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ),
               ],
             ),
           ),
@@ -410,15 +500,20 @@ class DashboardPage extends StatelessWidget {
           ),
         ],
         currentIndex: 0,
-        // 👇 UPDATED onTap for Settings navigation
         onTap: (index) {
-          if (index == 2) { // Settings tab
+          if (index == 2) {
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => const SettingsPage()),
             );
+          } else if (index == 1) {
+            // ✅ added navigation to ChatPage
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const ChatPage()),
+            );
           }
-          // For other tabs (Dashboard=0, Chatbot=1) you can handle later
+          // index 0 (Dashboard) – stay on current page
         },
       ),
     );

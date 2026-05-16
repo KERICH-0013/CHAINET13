@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../controllers/chat_controller.dart';
 import '../services/chat_service.dart';
-import 'pest_detection_page.dart'; // <-- already added
+import 'pest_detection_page.dart';
 
 class ChatPage extends StatelessWidget {
   const ChatPage({super.key});
@@ -139,7 +139,7 @@ class ChatView extends StatelessWidget {
               ),
             ),
 
-            // 🔹 New button for Pest Detection
+            // Button for Pest Detection
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: ElevatedButton.icon(
@@ -154,7 +154,7 @@ class ChatView extends StatelessWidget {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.green.shade800,
                   foregroundColor: Colors.white,
-                  minimumSize: const Size(double.infinity, 48), // full width
+                  minimumSize: const Size(double.infinity, 48),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(24),
                   ),
@@ -183,13 +183,15 @@ class ChatView extends StatelessWidget {
     controller.clear();
     chatController.sendMessage(text);
 
-    // Scroll to bottom after message is sent
+    // Scroll to bottom after message is sent, but only if the scroll view is attached.
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      scrollController.animateTo(
-        scrollController.position.maxScrollExtent,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeOut,
-      );
+      if (scrollController.hasClients) {
+        scrollController.animateTo(
+          scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
     });
   }
 }

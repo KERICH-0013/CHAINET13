@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../dashboard.dart';
 import 'register_page.dart';
-import 'phone_verification_page.dart';
+import 'phonenumber/phone_number_page.dart';        // <-- changed import
+import 'admin/admin_login_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -81,14 +82,14 @@ class _LoginPageState extends State<LoginPage> {
           Container(
             decoration: BoxDecoration(
               image: DecorationImage(
-                image: AssetImage('assets/images/login.jpg'), // use your image
+                image: AssetImage('assets/images/login.jpg'),
                 fit: BoxFit.cover,
               ),
             ),
           ),
           // Semi‑transparent overlay for fade effect
           Container(color: Colors.black.withOpacity(0.3)),
-          // Main content (unchanged, with form fields made opaque)
+          // Main content
           SafeArea(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(24.0),
@@ -170,14 +171,14 @@ class _LoginPageState extends State<LoginPage> {
                           : const Text('Login', style: TextStyle(fontSize: 16)),
                     ),
                     const SizedBox(height: 16),
+                    // Updated phone login button
                     OutlinedButton.icon(
                       onPressed: () {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => const PhoneVerificationPage(
-                                phoneNumber: '',
-                              )),
+                            builder: (context) => const PhoneNumberPage(),
+                          ),
                         );
                       },
                       icon: const Icon(Icons.phone),
@@ -198,13 +199,29 @@ class _LoginPageState extends State<LoginPage> {
                             Navigator.pushReplacement(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => const RegisterPage()),
+                                builder: (context) => const RegisterPage(),
+                              ),
                             );
                           },
                           child: const Text('Register', style: TextStyle(color: Colors.white)),
                         ),
                       ],
                     ),
+                    const SizedBox(height: 12),
+                    // 🔹 Admin Login Button
+                    TextButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const AdminLoginPage()),
+                        );
+                      },
+                      child: const Text(
+                        'Admin Login',
+                        style: TextStyle(color: Colors.white70, decoration: TextDecoration.underline),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
                   ],
                 ),
               ),
