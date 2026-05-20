@@ -6,10 +6,18 @@ import '../screens/settings_page.dart';
 import '../screens/Extension_officer Application/officer_application_page.dart';
 import '../screens/officer_directory.dart';
 import '../screens/premium_checkout_page.dart';
-import '../screens/chat_page.dart'; // ✅ added import
+import '../screens/chat_page.dart';
+import '../screens/app_vision_screen.dart';
 
-class DashboardPage extends StatelessWidget {
+class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
+
+  @override
+  State<DashboardPage> createState() => _DashboardPageState();
+}
+
+class _DashboardPageState extends State<DashboardPage> {
+  int _currentIndex = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -65,7 +73,7 @@ class DashboardPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
 
-                // 🔹 NEW: Unlock Premium Services Card (placed right after greeting)
+                // Unlock Premium Services Card
                 Card(
                   elevation: 4,
                   shape: RoundedRectangleBorder(
@@ -115,7 +123,7 @@ class DashboardPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
 
-                // Weather Card (tappable)
+                // Weather Card
                 GestureDetector(
                   onTap: () {
                     Navigator.push(
@@ -133,12 +141,30 @@ class DashboardPage extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          Row(
+                            children: [
+                              const Text(
+                                'Weather',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                '(click to view)',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.green.shade700,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
                           const Text(
-                            'Weather',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
+                            '☁️ Expect light showers today – good for tea leaves!',
+                            style: TextStyle(fontSize: 12, color: Colors.grey),
                           ),
                           const SizedBox(height: 8),
                           Row(
@@ -196,7 +222,7 @@ class DashboardPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
 
-                // Market Price + Temperature Table (tappable)
+                // Market Price + Temperature Table
                 GestureDetector(
                   onTap: () {
                     Navigator.push(
@@ -214,7 +240,6 @@ class DashboardPage extends StatelessWidget {
                       child: Column(
                         children: [
                           Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               const Text(
                                 'Market Price',
@@ -223,44 +248,59 @@ class DashboardPage extends StatelessWidget {
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
-                              Row(
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 12,
-                                      vertical: 6,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: Colors.green.shade100,
-                                      borderRadius: BorderRadius.circular(20),
-                                    ),
-                                    child: Row(
-                                      children: const [
-                                        Text(
-                                          'KSh 65/kg',
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.green,
-                                          ),
-                                        ),
-                                        SizedBox(width: 4),
-                                        Icon(Icons.arrow_upward,
-                                            color: Colors.green, size: 16),
-                                        Text(
-                                          '+ KSh 2 ↑',
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            color: Colors.green,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Icon(Icons.arrow_forward_ios,
-                                      size: 16, color: Colors.green.shade800),
-                                ],
+                              const SizedBox(width: 8),
+                              Text(
+                                '(click to view)',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.green.shade700,
+                                ),
                               ),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          const Text(
+                            '📈 Prices up! Expect a bonus this season.',
+                            style: TextStyle(fontSize: 12, color: Colors.grey),
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 6,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.green.shade100,
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Row(
+                                  children: const [
+                                    Text(
+                                      'KSh 65/kg',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.green,
+                                      ),
+                                    ),
+                                    SizedBox(width: 4),
+                                    Icon(Icons.arrow_upward,
+                                        color: Colors.green, size: 16),
+                                    Text(
+                                      '+ KSh 2 ↑',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.green,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Icon(Icons.arrow_forward_ios,
+                                  size: 16, color: Colors.green.shade800),
                             ],
                           ),
                           const SizedBox(height: 16),
@@ -279,7 +319,7 @@ class DashboardPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
 
-                // Second Market Price Card with Trends (tappable)
+                // Second Market Price Card with Trends
                 GestureDetector(
                   onTap: () {
                     Navigator.push(
@@ -297,7 +337,6 @@ class DashboardPage extends StatelessWidget {
                       child: Column(
                         children: [
                           Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               const Text(
                                 'Market Price',
@@ -306,21 +345,36 @@ class DashboardPage extends StatelessWidget {
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
-                              Row(
-                                children: [
-                                  Text(
-                                    'KSh 65/kg',
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.green.shade800,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Icon(Icons.arrow_forward_ios,
-                                      size: 16, color: Colors.green.shade800),
-                                ],
+                              const SizedBox(width: 8),
+                              Text(
+                                '(click to view)',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.green.shade700,
+                                ),
                               ),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          const Text(
+                            '💰 Tea prices stable – good time to sell!',
+                            style: TextStyle(fontSize: 12, color: Colors.grey),
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'KSh 65/kg',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.green.shade800,
+                                ),
+                              ),
+                              Icon(Icons.arrow_forward_ios,
+                                  size: 16, color: Colors.green.shade800),
                             ],
                           ),
                           const SizedBox(height: 8),
@@ -349,7 +403,7 @@ class DashboardPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
 
-                // Pest Detection Card (tappable)
+                // Pest Detection Card
                 GestureDetector(
                   onTap: () {
                     Navigator.push(
@@ -378,14 +432,30 @@ class DashboardPage extends StatelessWidget {
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
-                              children: const [
-                                Text(
+                              children: [
+                                const Text(
                                   'Pest Detection',
                                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                                 ),
-                                Text(
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 2),
+                                  child: Text(
+                                    '(click to view)',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.green.shade700,
+                                    ),
+                                  ),
+                                ),
+                                const Text(
                                   'Scan leaves & identify threats',
                                   style: TextStyle(fontSize: 14, color: Colors.grey),
+                                ),
+                                const SizedBox(height: 4),
+                                const Text(
+                                  '🐛 Early detection = better yield!',
+                                  style: TextStyle(fontSize: 12, color: Colors.grey),
                                 ),
                               ],
                             ),
@@ -398,7 +468,64 @@ class DashboardPage extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
 
-                // Recommendation Card (unchanged)
+                // App Vision Card
+                GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const AppVisionScreen()),
+                    );
+                  },
+                  child: Card(
+                    elevation: 4,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: Colors.purple.shade50,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Icon(Icons.visibility, size: 30, color: Colors.purple.shade700),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'App Vision',
+                                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                                ),
+                                Text(
+                                  '(click to view)',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.green.shade700,
+                                  ),
+                                ),
+                                const Text(
+                                  'Learn about our mission and future plans',
+                                  style: TextStyle(fontSize: 14, color: Colors.grey),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Icon(Icons.arrow_forward_ios, size: 16, color: Colors.purple.shade700),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // Recommendation Card
                 Card(
                   elevation: 4,
                   shape: RoundedRectangleBorder(
@@ -421,10 +548,20 @@ class DashboardPage extends StatelessWidget {
                           'It\'s a good time to prune your tea bushes to prevent pest infestation. Focus on removing dead and damaged leaves.',
                           style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
                         ),
+                        const SizedBox(height: 4),
+                        const Text(
+                          '✂️ Start pruning – healthy bushes = better harvest!',
+                          style: TextStyle(fontSize: 12, color: Colors.grey),
+                        ),
                         const SizedBox(height: 16),
                         Center(
                           child: ElevatedButton(
-                            onPressed: () {},
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => const ChatPage()),
+                              );
+                            },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.green.shade800,
                               foregroundColor: Colors.white,
@@ -441,7 +578,7 @@ class DashboardPage extends StatelessWidget {
                   ),
                 ),
 
-                // 🔹 New: Extension Officer Options
+                // Extension Officer Options
                 const SizedBox(height: 16),
                 Card(
                   elevation: 2,
@@ -485,6 +622,7 @@ class DashboardPage extends StatelessWidget {
         type: BottomNavigationBarType.fixed,
         selectedItemColor: Colors.green.shade800,
         unselectedItemColor: Colors.grey,
+        currentIndex: _currentIndex,
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.dashboard),
@@ -499,21 +637,21 @@ class DashboardPage extends StatelessWidget {
             label: 'Settings',
           ),
         ],
-        currentIndex: 0,
         onTap: (index) {
-          if (index == 2) {
+          setState(() {
+            _currentIndex = index;
+          });
+          if (index == 1) {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => const SettingsPage()),
+              MaterialPageRoute(builder: (context) => ChatPage()), // ✅ removed const
             );
-          } else if (index == 1) {
-            // ✅ added navigation to ChatPage
+          } else if (index == 2) {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => const ChatPage()),
+              MaterialPageRoute(builder: (context) => SettingsPage()), // ✅ removed const
             );
           }
-          // index 0 (Dashboard) – stay on current page
         },
       ),
     );

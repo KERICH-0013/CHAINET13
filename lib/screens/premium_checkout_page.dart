@@ -1,9 +1,10 @@
+// lib/screens/premium_checkout_page.dart
 import 'package:flutter/material.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class PremiumCheckoutPage extends StatefulWidget {
-  const PremiumCheckoutPage({super.key}); // const constructor
+  const PremiumCheckoutPage({super.key});
 
   @override
   State<PremiumCheckoutPage> createState() => _PremiumCheckoutPageState();
@@ -16,9 +17,9 @@ class _PremiumCheckoutPageState extends State<PremiumCheckoutPage> {
   Future<void> _initiatePayment() async {
     setState(() => _isLoading = true);
     try {
-      final HttpsCallable callable = FirebaseFunctions.instance.httpsCallable('initiatePayment');
+      final HttpsCallable callable = FirebaseFunctions.instance.httpsCallable('initiatePaymentV2');
       await callable.call(<String, dynamic>{
-        'amount': 100, // KES 100 for premium access
+        'amount': 100,
         'phoneNumber': _phoneController.text.trim(),
       });
       if (mounted) {
@@ -42,47 +43,136 @@ class _PremiumCheckoutPageState extends State<PremiumCheckoutPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Unlock Premium Services'),
+        title: const Text('Premium Services'),
         backgroundColor: Colors.green.shade800,
         foregroundColor: Colors.white,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text(
-              'Get access to:',
-              style: TextStyle(fontSize: 18),
-            ),
-            const SizedBox(height: 8),
-            const Text('✅ Extension Officer Registration'),
-            const Text('✅ Pest Detection Page'),
-            const SizedBox(height: 24),
-            TextField(
-              controller: _phoneController,
-              decoration: const InputDecoration(
-                labelText: 'M-Pesa Phone Number',
-                hintText: 'e.g., 254712345678',
-                prefixIcon: Icon(Icons.phone_android),
-                border: OutlineInputBorder(),
+      body: Stack(
+        children: [
+          // Background image (slightly visible)
+          Container(
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('assets/images/unlock.jpg'),
+                fit: BoxFit.cover,
+                opacity: 0.35, // slightly more visible
               ),
-              keyboardType: TextInputType.phone,
             ),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: _isLoading ? null : _initiatePayment,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.orange.shade700,
-                foregroundColor: Colors.white,
-                minimumSize: const Size(double.infinity, 50),
-              ),
-              child: _isLoading
-                  ? const CircularProgressIndicator(color: Colors.white)
-                  : const Text('Pay with M-Pesa (KES 100)'),
+          ),
+          // Main content
+          SingleChildScrollView(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                const SizedBox(height: 20),
+
+                // Title
+                const Text(
+                  'Extension Officer Registration & Pest Detection',
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 16),
+
+                // Info card
+                Card(
+                  elevation: 2,
+                  color: Colors.white.withOpacity(0.95),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      children: const [
+                        Text(
+                          '✨ CURRENTLY FREE ✨',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.green,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        SizedBox(height: 12),
+                        Text(
+                          'Extension Officer Registration and Pest Detection are currently FREE for all users.',
+                          style: TextStyle(fontSize: 14),
+                          textAlign: TextAlign.center,
+                        ),
+                        SizedBox(height: 12),
+                        Text(
+                          'Premium features like advanced analytics will be added in the future.',
+                          style: TextStyle(fontSize: 13, color: Colors.grey),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+
+                // Phone input (for future payments)
+                Card(
+                  elevation: 2,
+                  color: Colors.white.withOpacity(0.95),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      children: [
+                        const Text(
+                          '🔜 Coming Soon: Premium Access',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.orange,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        TextField(
+                          controller: _phoneController,
+                          decoration: const InputDecoration(
+                            labelText: 'M-Pesa Phone Number',
+                            hintText: 'e.g., 254712345678',
+                            border: OutlineInputBorder(),
+                          ),
+                          keyboardType: TextInputType.phone,
+                        ),
+                        const SizedBox(height: 12),
+                        ElevatedButton(
+                          onPressed: _isLoading ? null : _initiatePayment,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green.shade800,
+                            foregroundColor: Colors.white,
+                            minimumSize: const Size(double.infinity, 45),
+                          ),
+                          child: _isLoading
+                              ? const SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                )
+                              : const Text('Pay with M-Pesa (Coming Soon)'),
+                        ),
+                        const SizedBox(height: 8),
+                        const Text(
+                          'Payment system is being tested. Premium features are currently FREE.',
+                          style: TextStyle(fontSize: 12, color: Colors.grey),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

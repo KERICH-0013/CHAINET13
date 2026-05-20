@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../dashboard.dart'; // ✅ added import for DashboardPage
 import 'login_page.dart';
-import 'phone_verification_page.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -51,13 +51,12 @@ class _RegisterPageState extends State<RegisterPage> {
         'createdAt': FieldValue.serverTimestamp(),
       });
 
+      // ✅ Navigate directly to DashboardPage after successful registration
       if (mounted) {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (_) => PhoneVerificationPage(
-              phoneNumber: _phoneController.text.trim(),
-            ),
+            builder: (_) => DashboardPage(),
           ),
         );
       }
@@ -213,13 +212,13 @@ class _RegisterPageState extends State<RegisterPage> {
                       ),
                       child: _isLoading
                           ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 2,
-                        ),
-                      )
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            )
                           : const Text('Register', style: TextStyle(fontSize: 16)),
                     ),
                     const SizedBox(height: 16),

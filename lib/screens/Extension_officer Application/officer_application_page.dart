@@ -123,6 +123,11 @@ class _OfficerApplicationPageState extends State<OfficerApplicationPage> {
 
   @override
   Widget build(BuildContext context) {
+    // ✅ No premium check – direct access for all logged-in users
+    return _buildApplicationForm();
+  }
+
+  Widget _buildApplicationForm() {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Extension Officer Application'),

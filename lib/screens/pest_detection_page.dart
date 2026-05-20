@@ -3,10 +3,122 @@ import 'package:camera/camera.dart';
 import 'pest_list_page.dart';
 import 'camera_scan_page.dart';
 import 'about_page.dart';
-import 'scan_result_page.dart'; // <-- added for result display
+import 'scan_result_page.dart';
+import 'app_vision_screen.dart';
+import '../dashboard.dart';
+import 'officer_directory.dart';
+import 'settings_page.dart';
 
-class PestDetectionPage extends StatelessWidget {
+class PestDetectionPage extends StatefulWidget {
   const PestDetectionPage({super.key});
+
+  @override
+  State<PestDetectionPage> createState() => _PestDetectionPageState();
+}
+
+class _PestDetectionPageState extends State<PestDetectionPage> {
+  int _currentIndex = 1; // SCAN tab is selected
+
+  // Dummy pest data for demo results
+  final List<Map<String, dynamic>> _dummyPests = [
+    {'name': 'Tea Aphid', 'confidence': 92, 'severity': 'Medium', 'icon': '🐛'},
+    {'name': 'Red Spider Mite', 'confidence': 78, 'severity': 'High', 'icon': '🕷️'},
+    {'name': 'Tea Mosquito Bug', 'confidence': 65, 'severity': 'High', 'icon': '🦟'},
+    {'name': 'Healthy Leaf', 'confidence': 95, 'severity': 'None', 'icon': '🍃'},
+  ];
+
+  String _lastScanResult = '';
+  bool _showResult = false;
+
+  Future<void> _scanAndDetect() async {
+    final cameras = await availableCameras();
+    if (cameras.isNotEmpty) {
+      final capturedImagePath = await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => CameraScanPage(cameras: cameras),
+        ),
+      );
+      if (capturedImagePath != null && capturedImagePath is String) {
+        // Simulate pest detection (dummy result)
+        final randomPest = _dummyPests[_dummyPests.length - 1]; // Use Healthy Leaf for demo
+        // For demo, let's cycle through pests randomly
+        final randomIndex = DateTime.now().millisecondsSinceEpoch % _dummyPests.length;
+        final detected = _dummyPests[randomIndex.toInt()];
+
+        setState(() {
+          _lastScanResult = detected['name'];
+          _showResult = true;
+        });
+
+        // Show result dialog
+        _showDetectionResult(detected);
+      }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No camera available on this device')),
+      );
+    }
+  }
+
+  void _showDetectionResult(Map<String, dynamic> pest) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Row(
+          children: [
+            Text(pest['icon'], style: const TextStyle(fontSize: 32)),
+            const SizedBox(width: 12),
+            const Text('Detection Result'),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Detected: ${pest['name']}',
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            Text('Confidence: ${pest['confidence']}%'),
+            Text('Severity: ${pest['severity']}'),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.green.shade50,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Text(
+                '📋 Recommendation: Apply appropriate pesticide or consult an extension officer.',
+                style: TextStyle(fontSize: 13),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const PestListPage()),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.green.shade800,
+            ),
+            child: const Text('Learn More'),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +128,6 @@ class PestDetectionPage extends StatelessWidget {
         backgroundColor: Colors.green.shade800,
         foregroundColor: Colors.white,
         actions: [
-          // 🔹 Prominent "About" button with icon and label
           TextButton.icon(
             onPressed: () {
               Navigator.push(
@@ -45,7 +156,7 @@ class PestDetectionPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // --- Top Card with camera preview placeholder ---
+            // Top Card with camera
             Card(
               elevation: 4,
               shape: RoundedRectangleBorder(
@@ -76,33 +187,8 @@ class PestDetectionPage extends StatelessWidget {
                       style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                     ),
                     const SizedBox(height: 16),
-
-                    // 🔹 Updated Scan Now button – captures image and shows result
                     ElevatedButton(
-                      onPressed: () async {
-                        final cameras = await availableCameras();
-                        if (cameras.isNotEmpty) {
-                          final capturedImagePath = await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => CameraScanPage(cameras: cameras),
-                            ),
-                          );
-                          if (capturedImagePath != null && capturedImagePath is String) {
-                            // Navigate to result page with the image
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => ScanResultPage(imagePath: capturedImagePath),
-                              ),
-                            );
-                          }
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('No camera available on this device')),
-                          );
-                        }
-                      },
+                      onPressed: _scanAndDetect,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.green.shade800,
                         foregroundColor: Colors.white,
@@ -113,13 +199,36 @@ class PestDetectionPage extends StatelessWidget {
                       ),
                       child: const Text('Scan Now'),
                     ),
+                    if (_showResult && _lastScanResult.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 12),
+                        child: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.green.shade50,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.check_circle, color: Colors.green, size: 20),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  'Last scan: $_lastScanResult detected',
+                                  style: const TextStyle(fontSize: 13),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
                   ],
                 ),
               ),
             ),
             const SizedBox(height: 24),
 
-            // --- Recent Scans Section ---
+            // Recent Scans Section
             const Text(
               'Recent Scans',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
@@ -139,7 +248,7 @@ class PestDetectionPage extends StatelessWidget {
             ),
             const SizedBox(height: 24),
 
-            // --- Common Threats Guide ---
+            // Common Threats Guide
             const Text(
               'Common Threats Guide',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
@@ -183,6 +292,29 @@ class PestDetectionPage extends StatelessWidget {
                 ),
               ],
             ),
+            const SizedBox(height: 16),
+
+            // View Our Vision Button (dark green)
+            Center(
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const AppVisionScreen()),
+                  );
+                },
+                icon: const Icon(Icons.visibility),
+                label: const Text('View Our Vision'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green.shade800, // dark green
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                ),
+              ),
+            ),
           ],
         ),
       ),
@@ -190,19 +322,39 @@ class PestDetectionPage extends StatelessWidget {
         type: BottomNavigationBarType.fixed,
         selectedItemColor: Colors.green.shade800,
         unselectedItemColor: Colors.grey,
-        currentIndex: 1,
+        currentIndex: _currentIndex,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'HOME'),
           BottomNavigationBarItem(icon: Icon(Icons.camera_alt), label: 'SCAN'),
           BottomNavigationBarItem(icon: Icon(Icons.people), label: 'COMMUNITY'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'PROFILE'),
         ],
-        onTap: (index) {},
+        onTap: (index) {
+          setState(() {
+            _currentIndex = index;
+          });
+          if (index == 0) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const DashboardPage()),
+            );
+          } else if (index == 2) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const OfficerDirectory()),
+            );
+          } else if (index == 3) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const SettingsPage()),
+            );
+          }
+          // Index 1 (SCAN) – stay on current page
+        },
       ),
     );
   }
 
-  // Helper for recent scan items
   Widget _buildRecentScanItem({
     required String time,
     required String status,
@@ -231,7 +383,6 @@ class PestDetectionPage extends StatelessWidget {
     );
   }
 
-  // Helper for threat guide grid items – receives context
   Widget _buildThreatCard({
     required BuildContext context,
     required String title,

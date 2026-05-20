@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../dashboard.dart';
 import 'register_page.dart';
-import 'phonenumber/phone_number_page.dart';        // <-- changed import
+import 'phonenumber/phone_number_page.dart';
 import 'admin/admin_login_page.dart';
 
 class LoginPage extends StatefulWidget {
@@ -18,6 +18,9 @@ class _LoginPageState extends State<LoginPage> {
   final _passwordController = TextEditingController();
   bool _isLoading = false;
   bool _obscurePassword = true;
+
+  // Admin email for conditional button visibility
+  bool get _isAdminEmail => _emailController.text.trim() == 'labankipkoechkerich@gmail.com';
 
   @override
   void dispose() {
@@ -107,6 +110,7 @@ class _LoginPageState extends State<LoginPage> {
                     const SizedBox(height: 40),
                     TextFormField(
                       controller: _emailController,
+                      onChanged: (_) => setState(() {}), // Rebuild when email changes
                       decoration: const InputDecoration(
                         labelText: 'Email',
                         border: OutlineInputBorder(),
@@ -161,13 +165,13 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       child: _isLoading
                           ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 2,
-                        ),
-                      )
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            )
                           : const Text('Login', style: TextStyle(fontSize: 16)),
                     ),
                     const SizedBox(height: 16),
@@ -208,19 +212,20 @@ class _LoginPageState extends State<LoginPage> {
                       ],
                     ),
                     const SizedBox(height: 12),
-                    // 🔹 Admin Login Button
-                    TextButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (_) => const AdminLoginPage()),
-                        );
-                      },
-                      child: const Text(
-                        'Admin Login',
-                        style: TextStyle(color: Colors.white70, decoration: TextDecoration.underline),
+                    // 🔹 Admin Login Button (only shows when the admin email is entered)
+                    if (_isAdminEmail)
+                      TextButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => const AdminLoginPage()),
+                          );
+                        },
+                        child: const Text(
+                          'Admin Login',
+                          style: TextStyle(color: Colors.white70, decoration: TextDecoration.underline),
+                        ),
                       ),
-                    ),
                     const SizedBox(height: 20),
                   ],
                 ),

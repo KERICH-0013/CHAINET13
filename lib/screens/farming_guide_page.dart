@@ -1,9 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'chat_page.dart';
+import '../dashboard.dart';
+import 'settings_page.dart';
 
-class FarmingGuidePage extends StatelessWidget {
+class FarmingGuidePage extends StatefulWidget {
   const FarmingGuidePage({super.key});
+
+  @override
+  State<FarmingGuidePage> createState() => _FarmingGuidePageState();
+}
+
+class _FarmingGuidePageState extends State<FarmingGuidePage> {
+  int _currentIndex = 1; // Farming Guide is selected
 
   @override
   Widget build(BuildContext context) {
@@ -65,52 +74,51 @@ class FarmingGuidePage extends StatelessWidget {
                 ),
                 const SizedBox(height: 30),
 
-                // 1. Weekly Tip Section (existing)
+                // 1. Weekly Tip Section
                 _buildSectionTitle('Weekly Tip'),
                 const SizedBox(height: 12),
                 _buildTipItemWithImage(
                   title: 'Pruning in Humid Weather',
                   description:
-                  'Prune your tea bushes regularly in humid conditions to prevent pest infestation.',
+                      'Prune your tea bushes regularly in humid conditions to prevent pest infestation.',
                   imageAsset: 'assets/images/Farmingguide/prun.png',
                 ),
                 const SizedBox(height: 20),
 
-                // 2. Harvest Guide Section (new)
+                // 2. Harvest Guide Section
                 _buildSectionTitle('Harvest Guide'),
                 const SizedBox(height: 12),
                 _buildGuideItemWithImage(
                   title: 'Pluck 2 Leaves and a Bud',
                   description:
-                  'Always harvest the tender top two leaves and the unopened bud. This ensures high quality tea and promotes healthy regrowth.',
+                      'Always harvest the tender top two leaves and the unopened bud. This ensures high quality tea and promotes healthy regrowth.',
                   imageAsset: 'assets/images/Farmingguide/harvest.png',
                 ),
                 const SizedBox(height: 20),
 
-                // 3. How to Prune Section (new)
+                // 3. How to Prune Section
                 _buildSectionTitle('How to Prune'),
                 const SizedBox(height: 12),
                 _buildGuideItemWithImage(
                   title: 'Proper Pruning Techniques',
                   description:
-                  'Use sharp, clean tools. Cut at an angle just above a leaf node. Remove dead or diseased branches first, then shape the bush to encourage air circulation.',
+                      'Use sharp, clean tools. Cut at an angle just above a leaf node. Remove dead or diseased branches first, then shape the bush to encourage air circulation.',
                   imageAsset: 'assets/images/Farmingguide/prunknife.png',
                 ),
                 const SizedBox(height: 20),
 
-                // 4. Fertilizer Guide Section (moved and enhanced)
+                // 4. Fertilizer Guide Section
                 _buildSectionTitle('Fertilizer Guide'),
                 const SizedBox(height: 12),
                 _buildGuideItemWithImage(
                   title: 'Recommended Fertilizers',
-                  description:
-                  'Apply the right nutrients for healthy tea bushes:',
+                  description: 'Apply the right nutrients for healthy tea bushes:',
                   imageAsset: 'assets/images/Farmingguide/Npk.png',
                   bullets: ['Nitrogen for leaf growth', 'NPK 25-5-5 (Early Growth)'],
                 ),
                 const SizedBox(height: 20),
 
-                // 5. Pests Section (unchanged)
+                // 5. Pests Section
                 _buildSectionTitle('Pests'),
                 const SizedBox(height: 12),
                 _buildSubsectionTitle('Common Tea Pests'),
@@ -199,18 +207,28 @@ class FarmingGuidePage extends StatelessWidget {
         type: BottomNavigationBarType.fixed,
         selectedItemColor: Colors.green.shade800,
         unselectedItemColor: Colors.grey,
-        currentIndex: 1,
+        currentIndex: _currentIndex,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.dashboard), label: 'Dashboard'),
           BottomNavigationBarItem(icon: Icon(Icons.menu_book), label: 'Farming Guide'),
           BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Settings'),
         ],
         onTap: (index) {
+          setState(() {
+            _currentIndex = index;
+          });
           if (index == 0) {
-            Navigator.pushReplacementNamed(context, '/dashboard');
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const DashboardPage()),
+            );
           } else if (index == 2) {
-            Navigator.pushReplacementNamed(context, '/settings');
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const SettingsPage()),
+            );
           }
+          // Index 1 (Farming Guide) – stay on current page
         },
       ),
     );
@@ -282,7 +300,7 @@ class FarmingGuidePage extends StatelessWidget {
                   if (bullets != null) ...[
                     const SizedBox(height: 8),
                     ...bullets.map(
-                          (bullet) => Padding(
+                      (bullet) => Padding(
                         padding: const EdgeInsets.only(left: 8, bottom: 4),
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -325,7 +343,7 @@ class FarmingGuidePage extends StatelessWidget {
     );
   }
 
-  // Pest item (unchanged)
+  // Pest item
   Widget _buildPestItem({required String title, required String description}) {
     return Card(
       elevation: 2,
