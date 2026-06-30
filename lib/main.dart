@@ -1,16 +1,21 @@
- import 'dashboard.dart';
-import 'screens/farming_guide_page.dart';
-import 'screens/chat_page.dart';
-import 'screens/register_page.dart';
-import 'screens/login_page.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart'; // <-- added
-import 'firebase_options.dart'; // <-- added
+// import 'package:google_fonts/google_fonts.dart'; // Comment this out if not available
+import 'package:provider/provider.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
+import 'services/notification_service.dart';
+import 'screens/login_page.dart';
+import 'screens/register_page.dart';
+import 'screens/chat_page.dart';
+import 'screens/farming_guide_page.dart';
+import 'screens/admin/admin_dashboard.dart';      // Admin dashboard
+import 'screens/admin/user_management_page.dart'; // User management
+import 'dashboard.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized(); // <-- required for async
+  WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform, // <-- from firebase_options.dart
+    options: DefaultFirebaseOptions.currentPlatform,
   );
   runApp(const MyApp());
 }
@@ -20,41 +25,57 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'CHAINET',
-      theme: ThemeData(
-        primarySwatch: Colors.green,
-        fontFamily: 'Roboto',
-        elevatedButtonTheme: ElevatedButtonThemeData(
-          style: ElevatedButton.styleFrom(
+    return ChangeNotifierProvider(
+      create: (_) => NotificationService(),
+      child: MaterialApp(
+        title: 'CHAINET - Smarter Tea Farming',
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+          primarySwatch: Colors.green,
+          fontFamily: 'Roboto',
+          // textTheme: GoogleFonts.notoSansTextTheme(), // Commented out
+          appBarTheme: const AppBarTheme(
+            backgroundColor: Colors.green,
             foregroundColor: Colors.white,
-            backgroundColor: Colors.green.shade800,
-            minimumSize: const Size(150, 48),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
+            elevation: 0,
+          ),
+          elevatedButtonTheme: ElevatedButtonThemeData(
+            style: ElevatedButton.styleFrom(
+              foregroundColor: Colors.white,
+              backgroundColor: Colors.green.shade800,
+              minimumSize: const Size(150, 48),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+          ),
+          outlinedButtonTheme: OutlinedButtonThemeData(
+            style: OutlinedButton.styleFrom(
+              foregroundColor: Colors.white,
+              side: const BorderSide(color: Colors.white),
+              minimumSize: const Size(150, 48),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
             ),
           ),
         ),
-        outlinedButtonTheme: OutlinedButtonThemeData(
-          style: OutlinedButton.styleFrom(
-            foregroundColor: Colors.white,
-            side: BorderSide(color: Colors.white),
-            minimumSize: const Size(150, 48),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
-          ),
-        ),
+        home: HomePage(),   // removed 'const'
+        routes: {
+          '/farming-guide': (context) => FarmingGuidePage(),
+          '/dashboard': (context) => DashboardPage(),
+          '/chat': (context) => ChatPage(),
+          '/login': (context) => LoginPage(),
+          '/register': (context) => RegisterPage(),
+          '/admin-dashboard': (context) => AdminDashboard(),
+          '/admin/user-management': (context) => UserManagementPage(),
+        },
       ),
-      home: const HomePage(),
-      routes: {
-        '/farming-guide': (context) => const FarmingGuidePage(),
-      },
-      debugShowCheckedModeBanner: false,
     );
   }
 }
 
+// ---------- HomePage ----------
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
@@ -67,7 +88,7 @@ class HomePage extends StatelessWidget {
           Container(
             decoration: BoxDecoration(
               image: DecorationImage(
-                image: AssetImage('assets/images/background.jpg'),
+                image: const AssetImage('assets/images/background.jpg'),
                 fit: BoxFit.cover,
               ),
             ),
@@ -120,6 +141,7 @@ class HomePage extends StatelessWidget {
 
                     // Bullet points
                     _buildBulletPoint(
+                      context,
                       title: 'Farm Overview',
                       description: 'All your tea farm insights in one place',
                     ),
@@ -134,6 +156,7 @@ class HomePage extends StatelessWidget {
                         );
                       },
                       child: _buildBulletPoint(
+                        context,
                         title: 'AI Chatbot Assistant',
                         description: 'Ask questions and get instant tea farming advice',
                       ),
@@ -141,17 +164,19 @@ class HomePage extends StatelessWidget {
                     const SizedBox(height: 20),
 
                     _buildBulletPoint(
+                      context,
                       title: 'Smart Weather',
                       description: 'Accurate local forecasts',
                     ),
                     const SizedBox(height: 20),
                     _buildBulletPoint(
+                      context,
                       title: 'Market Prices',
                       description: 'Live tea market rates',
                     ),
                     const SizedBox(height: 40),
 
-                    // Buttons – now pointing to real authentication pages
+                    // Buttons
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -186,12 +211,16 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildBulletPoint({required String title, required String description}) {
+  Widget _buildBulletPoint(
+      BuildContext context, {
+        required String title,
+        required String description,
+      }) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.only(top: 2, right: 12),
+          padding: const EdgeInsets.only(top: 2, right: 12),   // ✅ FIXED
           child: Text(
             '•',
             style: TextStyle(
@@ -216,7 +245,7 @@ class HomePage extends StatelessWidget {
               const SizedBox(height: 4),
               Text(
                 description,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 14,
                   color: Colors.white70,
                 ),

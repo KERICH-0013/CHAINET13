@@ -21,7 +21,7 @@ dependencies:
   firebase_auth: ^5.5.2
   cloud_firestore: ^5.6.0
   firebase_storage: ^12.4.0
-  cloud_functions: ^5.6.2          # downgraded to be compatible with core 3.x
+  cloud_functions: ^5.6.2
 
   # UI
   pin_code_fields: ^8.0.1
@@ -48,7 +48,7 @@ flutter:
     - assets/images/dashboard.jpg
     - assets/images/dashboard2.jpg
     - assets/images/market.jpg
-    - 'assets/images/farming guide.jpg'
+    - assets/images/farming guide.jpg
     - assets/images/chatbot.jpg
     - assets/images/weather.jpg
     - assets/images/register.jpg
@@ -65,4 +65,4 @@ flutter:
     - assets/images/vision3.jpg
     - assets/images/pruning_methods.png
     - assets/images/unlock.jpg
-    - assets/images/Farmingguide/prunknife.png
+    - assets/images/notification.jpg

@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:firebase_auth/firebase_auth.dart'; // Added
+import '../services/notification_service.dart';
+import '../widgets/notification_badge.dart';
 import '../screens/weather_page.dart';
-import '../screens/market_page.dart';
+import '../screens/tea_market_screen.dart';
 import '../screens/pest_detection_page.dart';
 import '../screens/settings_page.dart';
 import '../screens/Extension_officer Application/officer_application_page.dart';
@@ -8,6 +12,7 @@ import '../screens/officer_directory.dart';
 import '../screens/premium_checkout_page.dart';
 import '../screens/chat_page.dart';
 import '../screens/app_vision_screen.dart';
+import '../screens/pest_library_page.dart';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -27,6 +32,232 @@ class _DashboardPageState extends State<DashboardPage> {
         backgroundColor: Colors.green.shade800,
         foregroundColor: Colors.white,
         elevation: 0,
+        actions: [
+          const NotificationBadge(),
+          const SizedBox(width: 8),
+          IconButton(
+            icon: const Icon(Icons.book, color: Colors.white),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const PestLibraryPage(),
+                ),
+              );
+            },
+            tooltip: 'Pest Library',
+          ),
+        ],
+      ),
+      drawer: Drawer(
+        child: Container(
+          color: Colors.white,
+          child: ListView(
+            padding: EdgeInsets.zero,
+            children: [
+              DrawerHeader(
+                decoration: BoxDecoration(
+                  color: Colors.green.shade800,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: const [
+                    Text(
+                      'CHAINET',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      'Smarter Tea Farming',
+                      style: TextStyle(
+                        color: Colors.white70,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              ListTile(
+                leading: const Icon(Icons.dashboard, color: Colors.green),
+                title: const Text('Dashboard'),
+                onTap: () {
+                  Navigator.pop(context);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.bug_report, color: Colors.green),
+                title: const Text('Pest Detection'),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const PestDetectionPage(),
+                    ),
+                  );
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.book, color: Colors.green),
+                title: const Text('Pest Library'),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const PestLibraryPage(),
+                    ),
+                  );
+                },
+              ),
+              const Divider(),
+              ListTile(
+                leading: const Icon(Icons.wb_sunny, color: Colors.orange),
+                title: const Text('Weather'),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const WeatherPage(),
+                    ),
+                  );
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.trending_up, color: Colors.blue),
+                title: const Text('Tea Market'),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const TeaMarketScreen(),
+                    ),
+                  );
+                },
+              ),
+              const Divider(),
+              ListTile(
+                leading: const Icon(Icons.assignment, color: Colors.purple),
+                title: const Text('Become an Officer'),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const OfficerApplicationPage(),
+                    ),
+                  );
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.people, color: Colors.purple),
+                title: const Text('Find Officers'),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const OfficerDirectory(),
+                    ),
+                  );
+                },
+              ),
+              const Divider(),
+              ListTile(
+                leading: const Icon(Icons.visibility, color: Colors.purple),
+                title: const Text('App Vision'),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const AppVisionScreen(),
+                    ),
+                  );
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.chat, color: Colors.blue),
+                title: const Text('Chat Assistant'),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const ChatPage(),
+                    ),
+                  );
+                },
+              ),
+              const Divider(),
+              ListTile(
+                leading: const Icon(Icons.workspace_premium, color: Colors.orange),
+                title: const Text('Premium Services'),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const PremiumCheckoutPage(),
+                    ),
+                  );
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.settings, color: Colors.grey),
+                title: const Text('Settings'),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const SettingsPage(),
+                    ),
+                  );
+                },
+              ),
+              // Admin Dashboard – only for labankipkoechkerich@gmail.com (case‑insensitive)
+              FutureBuilder<User?>(
+                future: FirebaseAuth.instance.authStateChanges().first,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const SizedBox.shrink();
+                  }
+                  final user = snapshot.data;
+                  // ✅ FIX: case‑insensitive comparison
+                  if (user != null &&
+                      user.email?.toLowerCase() == 'labankipkoechkerich@gmail.com'.toLowerCase()) {
+                    return ListTile(
+                      leading: const Icon(Icons.admin_panel_settings, color: Colors.orange),
+                      title: const Text('Admin Dashboard'),
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.pushNamed(context, '/admin-dashboard');
+                      },
+                    );
+                  } else {
+                    return const SizedBox.shrink();
+                  }
+                },
+              ),
+              // Debug: show current email (optional – you can remove this)
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  'Logged in as: ${FirebaseAuth.instance.currentUser?.email ?? 'not signed in'}',
+                  style: TextStyle(fontSize: 10, color: Colors.grey.shade600),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
       body: Stack(
         children: [
@@ -222,187 +453,6 @@ class _DashboardPageState extends State<DashboardPage> {
                 ),
                 const SizedBox(height: 16),
 
-                // Market Price + Temperature Table
-                GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const MarketPage()),
-                    );
-                  },
-                  child: Card(
-                    elevation: 4,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        children: [
-                          Row(
-                            children: [
-                              const Text(
-                                'Market Price',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                '(click to view)',
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.green.shade700,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 4),
-                          const Text(
-                            '📈 Prices up! Expect a bonus this season.',
-                            style: TextStyle(fontSize: 12, color: Colors.grey),
-                          ),
-                          const SizedBox(height: 8),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 6,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.green.shade100,
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: Row(
-                                  children: const [
-                                    Text(
-                                      'KSh 65/kg',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.green,
-                                      ),
-                                    ),
-                                    SizedBox(width: 4),
-                                    Icon(Icons.arrow_upward,
-                                        color: Colors.green, size: 16),
-                                    Text(
-                                      '+ KSh 2 ↑',
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: Colors.green,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Icon(Icons.arrow_forward_ios,
-                                  size: 16, color: Colors.green.shade800),
-                            ],
-                          ),
-                          const SizedBox(height: 16),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceAround,
-                            children: [
-                              _buildTempColumn('Wed', '24°', '17°'),
-                              _buildTempColumn('Thu', '21°', '16°'),
-                              _buildTempColumn('Fri', '25°', '15°'),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-
-                // Second Market Price Card with Trends
-                GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const MarketPage()),
-                    );
-                  },
-                  child: Card(
-                    elevation: 4,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        children: [
-                          Row(
-                            children: [
-                              const Text(
-                                'Market Price',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                '(click to view)',
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.green.shade700,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 4),
-                          const Text(
-                            '💰 Tea prices stable – good time to sell!',
-                            style: TextStyle(fontSize: 12, color: Colors.grey),
-                          ),
-                          const SizedBox(height: 8),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                'KSh 65/kg',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.green.shade800,
-                                ),
-                              ),
-                              Icon(Icons.arrow_forward_ios,
-                                  size: 16, color: Colors.green.shade800),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              const Text(
-                                'View Market Trends',
-                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-                              ),
-                              Row(
-                                children: [
-                                  _buildTrendButton('-1w'),
-                                  const SizedBox(width: 8),
-                                  _buildTrendButton('1d'),
-                                  const SizedBox(width: 8),
-                                  _buildTrendButton('Today', isSelected: true),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-
                 // Pest Detection Card
                 GestureDetector(
                   onTap: () {
@@ -449,18 +499,257 @@ class _DashboardPageState extends State<DashboardPage> {
                                   ),
                                 ),
                                 const Text(
-                                  'Scan leaves & identify threats',
+                                  'Upload leaf images & identify pests',
                                   style: TextStyle(fontSize: 14, color: Colors.grey),
                                 ),
                                 const SizedBox(height: 4),
                                 const Text(
-                                  '🐛 Early detection = better yield!',
+                                  '📸 Instant pest identification',
                                   style: TextStyle(fontSize: 12, color: Colors.grey),
                                 ),
                               ],
                             ),
                           ),
                           Icon(Icons.arrow_forward_ios, size: 16, color: Colors.green.shade800),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // Pest Library Card
+                GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const PestLibraryPage()),
+                    );
+                  },
+                  child: Card(
+                    elevation: 4,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: Colors.blue.shade50,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Icon(Icons.book, size: 30, color: Colors.blue.shade700),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Pest Library',
+                                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 2),
+                                  child: Text(
+                                    '(click to view)',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.green.shade700,
+                                    ),
+                                  ),
+                                ),
+                                const Text(
+                                  'Browse all pests & their remedies',
+                                  style: TextStyle(fontSize: 14, color: Colors.grey),
+                                ),
+                                const SizedBox(height: 4),
+                                const Text(
+                                  '📚 Comprehensive pest management guide',
+                                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Icon(Icons.arrow_forward_ios, size: 16, color: Colors.blue.shade700),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // Market Price + Temperature Table
+                GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const TeaMarketScreen()),
+                    );
+                  },
+                  child: Card(
+                    elevation: 4,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        children: [
+                          Row(
+                            children: [
+                              const Text(
+                                'Market Price',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                '(click to view)',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.green.shade700,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          const Text(
+                            '📈 Real-time tea auction prices',
+                            style: TextStyle(fontSize: 12, color: Colors.grey),
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 6,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.green.shade100,
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Row(
+                                  children: const [
+                                    Text(
+                                      'Live Data',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.green,
+                                      ),
+                                    ),
+                                    SizedBox(width: 4),
+                                    Icon(Icons.trending_up,
+                                        color: Colors.green, size: 16),
+                                  ],
+                                ),
+                              ),
+                              Icon(Icons.arrow_forward_ios,
+                                  size: 16, color: Colors.green.shade800),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            children: [
+                              _buildTempColumn('Wed', '24°', '17°'),
+                              _buildTempColumn('Thu', '21°', '16°'),
+                              _buildTempColumn('Fri', '25°', '15°'),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // Second Market Price Card with Trends
+                GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const TeaMarketScreen()),
+                    );
+                  },
+                  child: Card(
+                    elevation: 4,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        children: [
+                          Row(
+                            children: [
+                              const Text(
+                                'Market Analysis',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                '(click to view)',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.green.shade700,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          const Text(
+                            '💰 View price charts & market trends',
+                            style: TextStyle(fontSize: 12, color: Colors.grey),
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Mombasa Auction',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.green.shade800,
+                                ),
+                              ),
+                              Icon(Icons.arrow_forward_ios,
+                                  size: 16, color: Colors.green.shade800),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text(
+                                'View Historical Data',
+                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                              ),
+                              Row(
+                                children: [
+                                  _buildTrendButton('7d'),
+                                  const SizedBox(width: 8),
+                                  _buildTrendButton('14d'),
+                                  const SizedBox(width: 8),
+                                  _buildTrendButton('30d', isSelected: true),
+                                ],
+                              ),
+                            ],
+                          ),
                         ],
                       ),
                     ),
@@ -594,7 +883,7 @@ class _DashboardPageState extends State<DashboardPage> {
                         onTap: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (_) => OfficerApplicationPage()),
+                            MaterialPageRoute(builder: (_) => const OfficerApplicationPage()),
                           );
                         },
                       ),
@@ -644,12 +933,12 @@ class _DashboardPageState extends State<DashboardPage> {
           if (index == 1) {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => ChatPage()), // ✅ removed const
+              MaterialPageRoute(builder: (context) => const ChatPage()),
             );
           } else if (index == 2) {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => SettingsPage()), // ✅ removed const
+              MaterialPageRoute(builder: (context) => const SettingsPage()),
             );
           }
         },

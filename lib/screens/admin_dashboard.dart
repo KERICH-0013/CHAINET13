@@ -1,9 +1,232 @@
-// lib/screens/admin_dashboard.dart
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'user_management_page.dart';
 
-class AdminDashboard extends StatelessWidget {
+class AdminDashboard extends StatefulWidget {
   const AdminDashboard({super.key});
+
+  @override
+  State<AdminDashboard> createState() => _AdminDashboardState();
+}
+
+class _AdminDashboardState extends State<AdminDashboard> {
+  bool _isAdmin = false;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    // Delay check to ensure auth is loaded
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkAdmin();
+    });
+  }
+
+  Future<void> _checkAdmin() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Not signed in – redirecting to login.')),
+        );
+        Navigator.pushReplacementNamed(context, '/login');
+      }
+      return;
+    }
+
+    // Debug – show current email
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Your email: ${user.email}')),
+      );
+    }
+
+    // Case‑insensitive comparison
+    final allowedEmail = 'labankipkoechkerich@gmail.com';
+    if (user.email?.toLowerCase() != allowedEmail.toLowerCase()) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Unauthorized – redirecting to user dashboard.')),
+        );
+        Navigator.pushReplacementNamed(context, '/dashboard');
+      }
+      return;
+    }
+
+    setState(() {
+      _isAdmin = true;
+      _isLoading = false;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+    if (!_isAdmin) {
+      // Access denied – show a Retry button
+      return Scaffold(
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.lock, size: 64, color: Colors.red),
+              const SizedBox(height: 16),
+              const Text('Access denied – admin only.'),
+              const SizedBox(height: 8),
+              Text(
+                'Logged in as: ${FirebaseAuth.instance.currentUser?.email ?? 'unknown'}',
+                style: const TextStyle(fontSize: 14, color: Colors.grey),
+              ),
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: _checkAdmin,
+                child: const Text('Retry'),
+              ),
+              const SizedBox(height: 8),
+              OutlinedButton(
+                onPressed: () {
+                  FirebaseAuth.instance.signOut();
+                  Navigator.pushReplacementNamed(context, '/login');
+                },
+                child: const Text('Logout'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // ---------- Admin dashboard (grid) ----------
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Admin Dashboard'),
+        backgroundColor: Colors.green.shade800,
+        foregroundColor: Colors.white,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: GridView.count(
+          crossAxisCount: 2,
+          crossAxisSpacing: 16,
+          mainAxisSpacing: 16,
+          childAspectRatio: 1.2,
+          children: [
+            _adminCard(
+              context,
+              title: 'Applications',
+              icon: Icons.assignment,
+              color: Colors.orange,
+              onTap: () => _navigateToApplications(context),
+            ),
+            _adminCard(
+              context,
+              title: 'User Management',
+              icon: Icons.people,
+              color: Colors.blue,
+              onTap: () => Navigator.pushNamed(context, '/admin/user-management'),
+            ),
+            _adminCard(
+              context,
+              title: 'Pest Management',
+              icon: Icons.bug_report,
+              color: Colors.red,
+              onTap: () => _showComingSoon(context),
+            ),
+            _adminCard(
+              context,
+              title: 'Farming Guide',
+              icon: Icons.book,
+              color: Colors.green,
+              onTap: () => _showComingSoon(context),
+            ),
+            _adminCard(
+              context,
+              title: 'Notifications',
+              icon: Icons.notifications,
+              color: Colors.purple,
+              onTap: () => _showComingSoon(context),
+            ),
+            _adminCard(
+              context,
+              title: 'Analytics',
+              icon: Icons.analytics,
+              color: Colors.teal,
+              onTap: () => _showComingSoon(context),
+            ),
+            _adminCard(
+              context,
+              title: 'Export Data',
+              icon: Icons.download,
+              color: Colors.brown,
+              onTap: () => _showComingSoon(context),
+            ),
+            _adminCard(
+              context,
+              title: 'Settings',
+              icon: Icons.settings,
+              color: Colors.grey,
+              onTap: () => _showComingSoon(context),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _adminCard(
+      BuildContext context, {
+        required String title,
+        required IconData icon,
+        required Color color,
+        required VoidCallback onTap,
+      }) {
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: 48, color: color),
+              const SizedBox(height: 12),
+              Text(
+                title,
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showComingSoon(BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Coming soon!')),
+    );
+  }
+
+  void _navigateToApplications(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const ApplicationsManagementPage(),
+      ),
+    );
+  }
+}
+
+// ---------- Applications Management Page (unchanged) ----------
+class ApplicationsManagementPage extends StatelessWidget {
+  const ApplicationsManagementPage({super.key});
 
   Future<void> _updateStatus(BuildContext context, String appId, String newStatus) async {
     try {
@@ -32,10 +255,9 @@ class AdminDashboard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // TODO: Add admin check (only show if current user is admin)
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Admin Dashboard'),
+        title: const Text('Applications'),
         backgroundColor: Colors.green.shade800,
         foregroundColor: Colors.white,
       ),

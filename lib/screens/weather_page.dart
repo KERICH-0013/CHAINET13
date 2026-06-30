@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/weather_service.dart';
-import '../screens/market_page.dart';   // <-- added import
+import '../screens/tea_market_screen.dart';   // Correct import
 
 class WeatherPage extends StatefulWidget {
   const WeatherPage({super.key});
@@ -72,7 +72,7 @@ class _WeatherPageState extends State<WeatherPage> {
           Container(
             decoration: BoxDecoration(
               image: DecorationImage(
-                image: AssetImage('assets/images/weather.jpg'),
+                image: const AssetImage('assets/images/weather.jpg'),
                 fit: BoxFit.cover,
               ),
             ),
@@ -110,7 +110,9 @@ class _WeatherPageState extends State<WeatherPage> {
                   ),
                   const SizedBox(height: 24),
                   _buildCurrentWeatherCard(),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 8),
+                  _buildDataSourceIndicator(), // Added data source indicator
+                  const SizedBox(height: 16),
                   const Text(
                     '7-Day Forecast',
                     style: TextStyle(
@@ -122,14 +124,14 @@ class _WeatherPageState extends State<WeatherPage> {
                   const SizedBox(height: 16),
                   ...?_forecast?.map((day) => _buildForecastItem(day)).toList(),
 
-                  // 🔹 New button to navigate to Market Page
+                  // Fixed: Use TeaMarketScreen instead of MarketPage
                   const SizedBox(height: 24),
                   Center(
                     child: ElevatedButton(
                       onPressed: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => const MarketPage()),
+                          MaterialPageRoute(builder: (context) => const TeaMarketScreen()),
                         );
                       },
                       style: ElevatedButton.styleFrom(
@@ -146,7 +148,7 @@ class _WeatherPageState extends State<WeatherPage> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 20), // extra bottom padding
+                  const SizedBox(height: 20),
                 ],
               ),
             ),
@@ -278,6 +280,36 @@ class _WeatherPageState extends State<WeatherPage> {
         ),
       ],
     );
+  }
+
+  // Add this method to show when using cached/mock data
+  Widget _buildDataSourceIndicator() {
+    if (_currentWeather == null) return const SizedBox();
+
+    final isRealData = _currentWeather!['is_real_data'] ?? false;
+
+    if (!isRealData) {
+      return Container(
+        margin: const EdgeInsets.only(bottom: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: Colors.orange.withOpacity(0.9),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: const [
+            Icon(Icons.cloud_off, size: 16, color: Colors.white),
+            SizedBox(width: 8),
+            Text(
+              'Using cached weather data (offline mode)',
+              style: TextStyle(color: Colors.white, fontSize: 12),
+            ),
+          ],
+        ),
+      );
+    }
+    return const SizedBox();
   }
 
   Widget _buildErrorWidget() {
