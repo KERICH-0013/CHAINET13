@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import '../services/tea_market_service.dart';
+import '../services/tea_market_api_service.dart'; // NEW
+import '../models/tea_market_model.dart';       // NEW
 import '../screens/chat_page.dart';
-import '../screens/farming_guide_page.dart'; // Add this import
+import '../screens/farming_guide_page.dart';
 
 class TeaMarketScreen extends StatefulWidget {
   const TeaMarketScreen({super.key});
@@ -11,28 +12,18 @@ class TeaMarketScreen extends StatefulWidget {
 }
 
 class _TeaMarketScreenState extends State<TeaMarketScreen> {
-  final TeaMarketService _marketService = TeaMarketService();
-  Map<String, dynamic>? _currentPrice;
-  List<Map<String, dynamic>>? _historicalPrices;
-  Map<String, dynamic>? _marketTrends;
+  final TeaMarketApiService _apiService = TeaMarketApiService();
+  TeaMarketOverview? _marketData;
   bool _isLoading = true;
   bool _isRefreshing = false;
   String? _errorMessage;
   int _selectedChartDays = 7;
   String _lastRefreshTime = '';
 
-  // Exchange rate (USD to KES) - you can update this periodically
-  final double _exchangeRate = 130.0;
-
   @override
   void initState() {
     super.initState();
     _loadMarketData();
-  }
-
-  // Convert USD to KES
-  double _convertToKES(double usdPrice) {
-    return usdPrice * _exchangeRate;
   }
 
   Future<void> _loadMarketData() async {
@@ -42,14 +33,9 @@ class _TeaMarketScreenState extends State<TeaMarketScreen> {
     });
 
     try {
-      final price = await _marketService.getCurrentPrice();
-      final history = await _marketService.getHistoricalPrices(days: 30);
-      final trends = await _marketService.getMarketTrends();
-
+      final data = await _apiService.fetchMarketOverview();
       setState(() {
-        _currentPrice = price;
-        _historicalPrices = history;
-        _marketTrends = trends;
+        _marketData = data;
         _isLoading = false;
         _lastRefreshTime = _getCurrentTime();
       });
@@ -67,14 +53,9 @@ class _TeaMarketScreenState extends State<TeaMarketScreen> {
     });
 
     try {
-      final price = await _marketService.getCurrentPrice();
-      final history = await _marketService.getHistoricalPrices(days: 30);
-      final trends = await _marketService.getMarketTrends();
-
+      final data = await _apiService.fetchMarketOverview();
       setState(() {
-        _currentPrice = price;
-        _historicalPrices = history;
-        _marketTrends = trends;
+        _marketData = data;
         _isRefreshing = false;
         _lastRefreshTime = _getCurrentTime();
       });
@@ -91,12 +72,15 @@ class _TeaMarketScreenState extends State<TeaMarketScreen> {
     return '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}:${now.second.toString().padLeft(2, '0')}';
   }
 
-  List<Map<String, dynamic>> get _filteredHistory {
-    if (_historicalPrices == null) return [];
-    return _historicalPrices!.reversed.take(_selectedChartDays).toList().reversed.toList();
+  // Get filtered history based on selected days
+  List<HistoricalPrice> get _filteredHistory {
+    if (_marketData == null) return [];
+    final all = _marketData!.recentAuctions;
+    if (all.length <= _selectedChartDays) return all;
+    return all.sublist(all.length - _selectedChartDays);
   }
 
-  // Navigate to Farming Guide Page
+  // Navigate to Farming Guide
   void _navigateToFarmingGuide() {
     Navigator.push(
       context,
@@ -161,7 +145,7 @@ class _TeaMarketScreenState extends State<TeaMarketScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Header with title for better visual
+                  // Header
                   const Text(
                     'Kenya Tea Auction',
                     style: TextStyle(
@@ -180,7 +164,7 @@ class _TeaMarketScreenState extends State<TeaMarketScreen> {
                   ),
                   const SizedBox(height: 16),
 
-                  // API Key indicator (subtle – shows it's using an API)
+                  // API Key indicator
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
@@ -217,18 +201,18 @@ class _TeaMarketScreenState extends State<TeaMarketScreen> {
                         style: const TextStyle(fontSize: 12, color: Colors.white70),
                       ),
                       Text(
-                        'API: ${(_currentPrice?['api_key_used'] ?? '').substring(0, 20)}...',
+                        'API: ${_marketData?.apiKey ?? ''}',
                         style: const TextStyle(fontSize: 10, color: Colors.white60),
                       ),
                     ],
                   ),
                   const SizedBox(height: 16),
 
-                  // Main price card (UPDATED with KES)
+                  // Main price card
                   _buildMainPriceCard(),
                   const SizedBox(height: 20),
 
-                  // Market stats row (UPDATED with KES)
+                  // Market stats row
                   _buildMarketStatsRow(),
                   const SizedBox(height: 20),
 
@@ -236,7 +220,7 @@ class _TeaMarketScreenState extends State<TeaMarketScreen> {
                   _buildPriceChartCard(),
                   const SizedBox(height: 20),
 
-                  // Recent prices table (UPDATED with KES)
+                  // Recent prices table
                   _buildRecentPricesTable(),
                   const SizedBox(height: 20),
 
@@ -261,13 +245,14 @@ class _TeaMarketScreenState extends State<TeaMarketScreen> {
     );
   }
 
+  // ---- UI BUILDERS ----
+
   Widget _buildMainPriceCard() {
-    final isPositive = (_currentPrice?['change_direction'] ?? 'up') == 'up';
+    final data = _marketData!;
+    final spot = data.spotPrice;
+    final isPositive = spot.changePercent >= 0;
     final changeColor = isPositive ? Colors.green : Colors.red;
     final changeIcon = isPositive ? Icons.trending_up : Icons.trending_down;
-    final priceUSD = double.parse(_currentPrice?['rates']['TEA-M'] ?? '0');
-    final priceKES = _convertToKES(priceUSD);
-    final change = double.parse(_currentPrice?['change'] ?? '0');
 
     return Card(
       elevation: 4,
@@ -279,18 +264,16 @@ class _TeaMarketScreenState extends State<TeaMarketScreen> {
         child: Column(
           children: [
             Text(
-              _currentPrice?['market'] ?? 'Mombasa Tea Auction',
+              data.marketName,
               style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 16),
-            // USD price (primary)
             Text(
-              'USD ${priceUSD.toStringAsFixed(4)}',
+              'USD ${spot.usd.toStringAsFixed(4)}',
               style: const TextStyle(fontSize: 42, fontWeight: FontWeight.bold, color: Colors.green),
             ),
             const SizedBox(height: 8),
-            // KES price (secondary - for local farmers)
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
               decoration: BoxDecoration(
@@ -298,13 +281,13 @@ class _TeaMarketScreenState extends State<TeaMarketScreen> {
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Text(
-                '≈ KES ${priceKES.toStringAsFixed(2)} per kg',
+                '≈ KES ${spot.kes.toStringAsFixed(2)} per kg',
                 style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
               ),
             ),
-            Text(
-              _currentPrice?['unit'] ?? 'per kilogram',
-              style: const TextStyle(fontSize: 14, color: Colors.grey),
+            const Text(
+              'per kilogram',
+              style: TextStyle(fontSize: 14, color: Colors.grey),
             ),
             const SizedBox(height: 12),
             Container(
@@ -319,7 +302,7 @@ class _TeaMarketScreenState extends State<TeaMarketScreen> {
                   Icon(changeIcon, size: 16, color: changeColor),
                   const SizedBox(width: 4),
                   Text(
-                    '${change >= 0 ? '+' : ''}${change.toStringAsFixed(2)}%',
+                    '${spot.changePercent >= 0 ? '+' : ''}${spot.changePercent.toStringAsFixed(2)}%',
                     style: TextStyle(color: changeColor, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(width: 8),
@@ -332,7 +315,7 @@ class _TeaMarketScreenState extends State<TeaMarketScreen> {
             ),
             const SizedBox(height: 12),
             Text(
-              'Trading volume: ${_currentPrice?['volume']} ${_currentPrice?['volume_unit']}',
+              'Trading volume: ${(spot.volume / 1000).toStringAsFixed(0)}k kg',
               style: const TextStyle(fontSize: 12, color: Colors.grey),
             ),
           ],
@@ -342,16 +325,18 @@ class _TeaMarketScreenState extends State<TeaMarketScreen> {
   }
 
   Widget _buildMarketStatsRow() {
-    final priceUSD = double.parse(_currentPrice?['rates']['TEA-M'] ?? '0');
-    final previousCloseUSD = double.parse(_currentPrice?['previous_close'] ?? priceUSD.toString());
-    final previousCloseKES = _convertToKES(previousCloseUSD);
+    final data = _marketData!;
+    final prevClose = data.summary.previousClose;
+    final todayRange = data.summary.todayRange;
+    final weekRange = data.summary.week52Range;
 
     return Row(
       children: [
         Expanded(
           child: _buildStatCard(
             title: 'Previous Close',
-            value: 'USD ${previousCloseUSD.toStringAsFixed(4)}\n≈ KES ${previousCloseKES.toStringAsFixed(2)}',
+            value:
+            'USD ${prevClose.usd.toStringAsFixed(4)}\n≈ KES ${prevClose.kes.toStringAsFixed(2)}',
             icon: Icons.history,
           ),
         ),
@@ -359,7 +344,8 @@ class _TeaMarketScreenState extends State<TeaMarketScreen> {
         Expanded(
           child: _buildStatCard(
             title: 'Today\'s Range',
-            value: 'USD 2.68 – 3.02\n≈ KES 348 – 393',
+            value:
+            'USD ${todayRange.usdLow.toStringAsFixed(2)} – ${todayRange.usdHigh.toStringAsFixed(2)}\n≈ KES ${todayRange.kesLow.toStringAsFixed(0)} – ${todayRange.kesHigh.toStringAsFixed(0)}',
             icon: Icons.compare_arrows,
           ),
         ),
@@ -367,7 +353,8 @@ class _TeaMarketScreenState extends State<TeaMarketScreen> {
         Expanded(
           child: _buildStatCard(
             title: '52 Week Range',
-            value: 'USD 2.45 – 3.35\n≈ KES 318 – 436',
+            value:
+            'USD ${weekRange.usdLow.toStringAsFixed(2)} – ${weekRange.usdHigh.toStringAsFixed(2)}\n≈ KES ${weekRange.kesLow.toStringAsFixed(0)} – ${weekRange.kesHigh.toStringAsFixed(0)}',
             icon: Icons.show_chart,
           ),
         ),
@@ -404,6 +391,23 @@ class _TeaMarketScreenState extends State<TeaMarketScreen> {
   }
 
   Widget _buildPriceChartCard() {
+    final history = _filteredHistory;
+    if (history.isEmpty) {
+      return Card(
+        elevation: 2,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        color: Colors.white.withOpacity(0.95),
+        child: const Padding(
+          padding: EdgeInsets.all(16),
+          child: Center(child: Text('No chart data available')),
+        ),
+      );
+    }
+
+    // Prepare data for chart
+    final chartData = history.map((e) => e.usd).toList();
+    final chartLabels = history.map((e) => e.date).toList();
+
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -434,12 +438,10 @@ class _TeaMarketScreenState extends State<TeaMarketScreen> {
             const SizedBox(height: 16),
             SizedBox(
               height: 200,
-              child: _filteredHistory.isEmpty
-                  ? const Center(child: Text('No data available'))
-                  : CustomPaint(
+              child: CustomPaint(
                 painter: LineChartPainter(
-                  data: _filteredHistory.map((e) => double.parse(e['price'])).toList(),
-                  labels: _filteredHistory.map((e) => e['date_string'] as String).toList(),
+                  data: chartData,
+                  labels: chartLabels,
                   color: Colors.green.shade700,
                 ),
               ),
@@ -534,35 +536,40 @@ class _TeaMarketScreenState extends State<TeaMarketScreen> {
                     ),
                     ...history.map((item) {
                       final index = history.indexOf(item);
-                      final currentPriceUSD = double.parse(item['price']);
-                      final currentPriceKES = _convertToKES(currentPriceUSD);
-                      final prevPrice = index > 0 ? double.parse(history[index - 1]['price']) : currentPriceUSD;
-                      final change = ((currentPriceUSD - prevPrice) / prevPrice * 100);
+                      // Compute change relative to previous item
+                      double change = 0;
+                      if (index > 0) {
+                        final prev = history[index - 1].usd;
+                        change = ((item.usd - prev) / prev) * 100;
+                      }
                       final isPositive = change >= 0;
                       return TableRow(
                         children: [
                           Padding(
                             padding: const EdgeInsets.all(10),
-                            child: Text(item['date_string']),
+                            child: Text(item.date),
                           ),
                           Padding(
                             padding: const EdgeInsets.all(10),
-                            child: Text(currentPriceUSD.toStringAsFixed(4)),
+                            child: Text(item.usd.toStringAsFixed(4)),
                           ),
                           Padding(
                             padding: const EdgeInsets.all(10),
-                            child: Text(currentPriceKES.toStringAsFixed(2)),
+                            child: Text(item.kes.toStringAsFixed(2)),
                           ),
                           Padding(
                             padding: const EdgeInsets.all(10),
                             child: Text(
                               '${isPositive ? '+' : ''}${change.toStringAsFixed(2)}%',
-                              style: TextStyle(color: isPositive ? Colors.green : Colors.red, fontWeight: FontWeight.w500),
+                              style: TextStyle(
+                                color: isPositive ? Colors.green : Colors.red,
+                                fontWeight: FontWeight.w500,
+                              ),
                             ),
                           ),
                           Padding(
                             padding: const EdgeInsets.all(10),
-                            child: Text('${(2200000 + (index * 15000)).toStringAsFixed(0)}'),
+                            child: Text((item.volume / 1000).toStringAsFixed(0) + 'k'),
                           ),
                         ],
                       );
@@ -578,6 +585,9 @@ class _TeaMarketScreenState extends State<TeaMarketScreen> {
   }
 
   Widget _buildMarketTrendsCard() {
+    final data = _marketData!;
+    final outlook = data.outlook;
+
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -597,19 +607,19 @@ class _TeaMarketScreenState extends State<TeaMarketScreen> {
                 Expanded(
                   child: _buildTrendIndicator(
                     label: 'Daily Trend',
-                    value: _marketTrends?['daily_trend'] ?? 'neutral',
+                    value: outlook.daily,
                   ),
                 ),
                 Expanded(
                   child: _buildTrendIndicator(
                     label: 'Weekly Trend',
-                    value: _marketTrends?['weekly_trend'] ?? 'neutral',
+                    value: outlook.weekly,
                   ),
                 ),
                 Expanded(
                   child: _buildTrendIndicator(
                     label: 'Monthly Trend',
-                    value: _marketTrends?['monthly_trend'] ?? 'neutral',
+                    value: outlook.monthly,
                   ),
                 ),
               ],
@@ -630,12 +640,12 @@ class _TeaMarketScreenState extends State<TeaMarketScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Next auction date: ${_marketTrends?['next_auction_date'] ?? 'TBD'}',
+                          'Next auction date: ${data.nextAuctionDate}',
                           style: const TextStyle(fontSize: 13),
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          'Exchange rate: 1 USD = ${_exchangeRate.toStringAsFixed(2)} KES',
+                          'Exchange rate: 1 USD = ${data.exchangeRate.toStringAsFixed(2)} KES',
                           style: const TextStyle(fontSize: 11, color: Colors.grey),
                         ),
                       ],
@@ -654,10 +664,11 @@ class _TeaMarketScreenState extends State<TeaMarketScreen> {
     Color color;
     IconData icon;
 
-    if (value == 'bullish' || value == 'upward' || value == 'positive') {
+    final lower = value.toLowerCase();
+    if (lower.contains('bullish') || lower.contains('upward') || lower.contains('positive')) {
       color = Colors.green;
       icon = Icons.trending_up;
-    } else if (value == 'bearish' || value == 'downward' || value == 'negative') {
+    } else if (lower.contains('bearish') || lower.contains('downward') || lower.contains('negative')) {
       color = Colors.red;
       icon = Icons.trending_down;
     } else {
@@ -746,7 +757,7 @@ class _TeaMarketScreenState extends State<TeaMarketScreen> {
     );
   }
 
-  // NEW: Farming Guide Button - Bottom Center
+  // Farming Guide Button - Bottom Center
   Widget _buildFarmingGuideButton() {
     return Center(
       child: ElevatedButton.icon(
@@ -807,7 +818,7 @@ class _TeaMarketScreenState extends State<TeaMarketScreen> {
   }
 }
 
-// Line chart painter
+// Line chart painter (unchanged)
 class LineChartPainter extends CustomPainter {
   final List<double> data;
   final List<String> labels;
